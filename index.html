@@ -13,17 +13,39 @@
 <meta property="og:title" content="Você foi escolhida para uma estreia exclusiva 🎬">
 <meta property="og:description" content="Reserve um tempo, pegue fones e uma pipoca. NÓS estreia no CinemaPG.">
 <meta property="og:url" content="https://CamposEB.github.io/cinemapg/">
-<meta property="og:image" content="https://CamposEB.github.io/cinemapg/assets/compartilhar/preview.webp">
-<meta property="og:image:type" content="image/webp">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image" content="https://CamposEB.github.io/cinemapg/assets/filme/poster.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1920">
+<meta property="og:image:height" content="1080">
 <meta name="twitter:card" content="summary_large_image">
+
+<!-- 📲 APP (PWA): "Adicionar à tela inicial" -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="assets/icones/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icones/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CinemaPG">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <!-- Frase de boas-vindas / avisos (fica fora das telas para aparecer em qualquer uma) -->
 <p class="welcome" id="welcome" aria-live="polite">Que bom te ver, Yasmin. Pegue a pipoca. 🍿</p>
+
+<!-- 🎬 MOMENTO DA ESTREIA: aparece quando a contagem zera com ela no site -->
+<div class="premiere-fx" id="premiere-fx" hidden role="dialog" aria-live="assertive" aria-label="A estreia começou">
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+  <svg class="fx-thread" viewBox="0 0 340 100" aria-hidden="true">
+    <path pathLength="1" d="M-10 56 C30 36 60 76 100 56 S140 40 170 56 C195 72 215 48 195 40 C175 34 160 66 185 78 C215 90 240 46 270 58 S320 72 350 52"/>
+  </svg>
+  <p class="fx-small">CinemaPG apresenta</p>
+  <h2 class="fx-title">Chegou a hora, Yasmin.</h2>
+  <p class="fx-sub">A estreia de <b>NÓS</b> começou. 🎬</p>
+  <button class="btn btn-primary fx-btn" id="fx-go">Ver o filme</button>
+  <button class="link fx-later" id="fx-later">Agora não</button>
+</div>
 
 <!-- 1. ENTRADA: as letras se aproximam e um fio vermelho as une -->
 <section id="intro" class="screen active">
@@ -91,8 +113,12 @@
 
     <h3 class="row-title row-title-sm">Em breve</h3>
     <div class="shelf">
+      <button class="soon-card" type="button" data-soon="Making of"><span class="soon-lock">🔒</span><b>Making of</b><small>Em breve</small></button>
+      <button class="soon-card" type="button" data-soon="Cenas deletadas"><span class="soon-lock">🔒</span><b>Cenas deletadas</b><small>Em breve</small></button>
       <button class="soon-card" type="button" data-soon="NÓS 2"><span class="soon-lock">🔒</span><b>NÓS 2</b><small>Em breve…</small></button>
     </div>
+
+    <button class="install" id="install" type="button" hidden>📲 Instalar o CinemaPG no celular</button>
 
     <p class="foot">CinemaPG · Uma plataforma feita só para você.</p>
   </main>
@@ -141,7 +167,6 @@
           <div><b id="pm-m">00</b><span>min</span></div>
           <div><b id="pm-s">00</b><span>seg</span></div>
         </div>
-        <p class="pm-hint" id="pm-hint" hidden>🔍 Volte todo dia: a imagem fica mais nítida a cada dia.</p>
       </div>
 
       <div class="actions">
@@ -175,7 +200,7 @@
   <section class="details">
     <h3 class="details-title">Elenco e equipe</h3>
     <dl class="grid">
-      <div><dt>Estrelando</dt><dd>Yasmin (Pucca)</dd></div>
+      <div><dt>Estrelando</dt><dd>Yasmin (a nossa Pucca)</dd></div>
       <div><dt>Direção</dt><dd>Garu</dd></div>
       <div><dt>Gênero</dt><dd>Romance, nostalgia, uma história real</dd></div>
       <div><dt>Este filme é</dt><dd>Fofo, nostálgico, emocionante</dd></div>
@@ -214,6 +239,16 @@
   <p class="notice-title">Para a melhor experiência:</p>
   <p class="notice-main">use fones e deixe o volume alto.</p>
   <button class="btn btn-primary" id="btn-ready">Estou pronta</button>
+</section>
+
+<!-- ABERTURA DO FILME: "CinemaPG apresenta" (alguns segundos antes do play) -->
+<section id="presents" class="screen" aria-label="CinemaPG apresenta NÓS">
+  <p class="pr-line">Cinema<b>PG</b> apresenta</p>
+  <p class="pr-title" aria-hidden="true">NÓS</p>
+  <svg class="pr-thread" viewBox="0 0 340 20" aria-hidden="true">
+    <path pathLength="1" d="M0 10 C40 -2 70 22 110 10 S170 -2 210 10 S280 22 340 10"/>
+  </svg>
+  <p class="pr-sub">Uma história real</p>
 </section>
 
 <!-- 5. PLAYER (vídeo: assets/video/nos.mp4 · imagem antes do play: assets/filme/poster.jpg) -->

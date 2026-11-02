@@ -20,7 +20,7 @@ const RELEASE_AT = "2026-11-14T00:00:00-03:00";
 
 // 🔍 Foto que clareia: a capa e o poster começam borrados (BLUR_MAX px) e ficam mais nítidos a cada dia até a estreia.
 // BLUR_DAYS = quantos dias antes da estreia o efeito começa (use o nº de dias entre a publicação e a estreia).
-const BLUR_MAX = 28, BLUR_DAYS = 12;
+const BLUR_MAX = 0, BLUR_DAYS = 12;
 
 // 🎞️ Teaser curtinho (opcional). Se o arquivo não existir, o botão "Assistir teaser" nem aparece.
 const TEASER_SRC = "assets/video/teaser.mp4";
@@ -63,6 +63,8 @@ const fmt = (t) => {
 /* ---- Navegação entre telas (fade) ---- */
 function show(id) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
+  // o aviso de boas-vindas não fica por cima da abertura, do filme ou do teaser
+  if (id === "presents" || id === "player" || id === "teaser") $("welcome").classList.remove("show");
 }
 document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => show(b.dataset.go)));
 
@@ -130,7 +132,6 @@ home.addEventListener("scroll", () => $("topbar-home").classList.toggle("solid",
     if (!p) return;
     ok.push(p);
   }
-  $("pm-hint").hidden = false;
   const slides = ok.map((src) => {
     const d = document.createElement("div");
     d.className = "slide"; d.style.backgroundImage = `url("${src}")`;
@@ -200,22 +201,50 @@ function seekWhenReady(t) {
   if (video.readyState >= 1) video.currentTime = t;
   else video.addEventListener("loadedmetadata", () => { video.currentTime = t; }, { once: true });
 }
+/* iPhone/Safari só deixa o vídeo tocar se o play nascer de um toque. Como a abertura "CinemaPG apresenta"
+   atrasa o play por alguns segundos, damos um "play+pause" mudo já no toque para liberar o vídeo. */
+let unlocking = false, mutedBefore = false;
+function unlockVideo() {
+  mutedBefore = video.muted; video.muted = true; unlocking = true;
+  const p = video.play();
+  if (p && p.then) p.then(() => { if (unlocking) { video.pause(); video.currentTime = 0; endUnlock(); } }).catch(endUnlock);
+}
+function endUnlock() { if (!unlocking) return; unlocking = false; video.muted = mutedBefore; }
+
 function enterPlayer() {
+  clearTimeout(presentsTimer);
+  endUnlock();
   show("player");
   $("endcard").hidden = true;
   video.play().catch(() => {});
   wake();
 }
+
+/* 🎬 "CinemaPG apresenta" (só quando começa do início; ao continuar de onde parou, pula) */
+let presentsTimer, pendingIntro = false;
+const PRESENTS_MS = 5200;
+function beginIntro() {
+  unlockVideo();
+  show("presents");
+  clearTimeout(presentsTimer);
+  presentsTimer = setTimeout(enterPlayer, PRESENTS_MS);
+}
+function launch(withIntro) {
+  if (!noticeSeen) { pendingIntro = withIntro; show("notice"); }
+  else if (withIntro) beginIntro();
+  else enterPlayer();
+}
 function startWatch(fromStart) {
   if (isLocked()) return lockedHint();
   loadVideo();
   const s = getSaved();
-  seekWhenReady(!fromStart && s ? s.t : 0);
-  if (noticeSeen) enterPlayer(); else show("notice");
+  const resuming = !fromStart && !!s;
+  seekWhenReady(resuming ? s.t : 0);
+  launch(!resuming);
 }
 $("btn-watch").addEventListener("click", () => startWatch(false));
 $("btn-restart").addEventListener("click", () => { store.del(KEY_PROGRESS); updateResume(); startWatch(true); });
-$("btn-ready").addEventListener("click", () => { noticeSeen = true; enterPlayer(); });
+$("btn-ready").addEventListener("click", () => { noticeSeen = true; if (pendingIntro) beginIntro(); else enterPlayer(); });
 
 function backToCatalog() { // volta para a tela de detalhes
   video.pause(); saveProgress(true);
@@ -330,7 +359,7 @@ const releaseMs = new Date(RELEASE_AT).getTime();
 let clockOffset = 0; // diferença entre o relógio do servidor e o do aparelho (evita burlar mudando a hora do celular)
 if (location.protocol.startsWith("http")) {
   fetch(location.href, { method: "HEAD", cache: "no-store" })
-    .then((r) => { const d = r.headers.get("date"); if (d) clockOffset = new Date(d).getTime() - Date.now(); tickPremiere(); })
+    .then((r) => { const d = r.headers.get("date"); if (d) clockOffset = new Date(d).getTime() - Date.now(); wasLocked = isLocked(); tickPremiere(); })
     .catch(() => {});
 }
 function isLocked() { return !location.hash.includes("teste") && Date.now() + clockOffset < releaseMs; }
@@ -358,11 +387,33 @@ function tickPremiere() {
     chip.textContent = "▶ Disponível agora";
     if (wasLocked) {
       updateResume();
-      showWelcome("Chegou a hora, Yasmin! A estreia começou. 🎬");
+      celebratePremiere();
     }
   }
   wasLocked = locked;
 }
+/* 🎉 Momento da estreia: a contagem zerou com ela no site */
+function buildConfetti() {
+  const box = $("confetti"); box.innerHTML = "";
+  const colors = ["#e0222f", "#b0121f", "#f6f1ea", "#ffd1d6", "#ff7b86"];
+  for (let i = 0; i < 46; i++) {
+    const el = document.createElement("i"), w = 6 + Math.random() * 7;
+    el.style.cssText = `left:${(Math.random() * 100).toFixed(1)}%;--w:${w.toFixed(1)}px;--h:${(w * (Math.random() < .5 ? 1 : 2.2)).toFixed(1)}px;` +
+      `--c:${colors[i % colors.length]};--d:${(3.5 + Math.random() * 3).toFixed(2)}s;--dl:${(Math.random() * 2.5).toFixed(2)}s;` +
+      `--x:${Math.round(Math.random() * 160 - 80)}px;--r:${Math.round(Math.random() * 900 - 450)}deg;border-radius:${Math.random() < .3 ? "50%" : "2px"}`;
+    box.appendChild(el);
+  }
+}
+function celebratePremiere() {
+  try { $("tv").pause(); } catch (_) {}
+  buildConfetti();
+  $("premiere-fx").hidden = false;
+  if (navigator.vibrate) navigator.vibrate([80, 60, 80]);
+}
+function closePremiereFx() { $("premiere-fx").hidden = true; updateResume(); }
+$("fx-go").addEventListener("click", () => { closePremiereFx(); startWatch(false); });
+$("fx-later").addEventListener("click", closePremiereFx);
+
 function lockedHint() {
   const b = $("btn-watch");
   b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
@@ -423,3 +474,28 @@ tv.addEventListener("ended", () => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && $("teaser").classList.contains("active")) closeTeaser();
 });
+
+
+/* ---- 📲 App (PWA): service worker + botão "Instalar" ---- */
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+const isStandalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const installBtn = $("install");
+let installEvt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault(); installEvt = e;
+  if (!isStandalone) installBtn.hidden = false;
+});
+if (isIOS && !isStandalone) installBtn.hidden = false; // iPhone não tem prompt: mostramos o passo a passo
+installBtn.addEventListener("click", async () => {
+  if (installEvt) {
+    installEvt.prompt();
+    try { await installEvt.userChoice; } catch (_) {}
+    installEvt = null; installBtn.hidden = true;
+  } else {
+    showWelcome("No iPhone, abra no Safari, toque em Compartilhar ⬆️ e depois em “Adicionar à Tela de Início”. 📲");
+  }
+});
+window.addEventListener("appinstalled", () => { installBtn.hidden = true; showWelcome("CinemaPG instalado! 🎬"); });
