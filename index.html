@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="robots" content="noindex, nofollow"> <!-- pede aos buscadores para não listar o site -->
+<title>CinemaPG</title>
+<meta name="description" content="CinemaPG apresenta: NÓS. Uma estreia exclusiva, feita só para você.">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CinemaPG">
+<meta property="og:title" content="Você foi escolhida para uma estreia exclusiva 🎬">
+<meta property="og:description" content="Reserve um tempo, pegue fones e uma pipoca. NÓS estreia no CinemaPG.">
+<meta property="og:url" content="https://CamposEB.github.io/cinemapg/">
+<meta property="og:image" content="https://CamposEB.github.io/cinemapg/assets/compartilhar/preview.webp">
+<meta property="og:image:type" content="image/webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Frase de boas-vindas / avisos (fica fora das telas para aparecer em qualquer uma) -->
+<p class="welcome" id="welcome" aria-live="polite">Que bom te ver, Yasmin. Pegue a pipoca. 🍿</p>
+
+<!-- 1. ENTRADA: as letras se aproximam e um fio vermelho as une -->
+<section id="intro" class="screen active">
+  <div class="glow"></div>
+  <h1 class="nos-logo" aria-label="NÓS">
+    <span class="letters" aria-hidden="true"><span>N</span><span>Ó</span><span>S</span></span>
+    <svg class="thread" viewBox="0 0 340 100" aria-hidden="true">
+      <path pathLength="1" d="M-10 56 C30 36 60 76 100 56 S140 40 170 56 C195 72 215 48 195 40 C175 34 160 66 185 78 C215 90 240 46 270 58 S320 72 350 52"/>
+    </svg>
+  </h1>
+  <p class="tagline">Uma história real merece uma estreia especial.</p>
+  <button class="btn btn-primary" data-go="profiles">Entrar</button>
+
+  <!-- "Pular abertura": aparece, mas não deixa pular (as mensagens ficam no script.js) -->
+  <p class="skip-msg" id="skip-msg" aria-live="polite"></p>
+  <button class="skip" id="skip">Pular abertura</button>
+</section>
+
+<!-- 2. SELEÇÃO DE PERFIL (fundo: assets/perfil/fundo.jpg) -->
+<section id="profiles" class="screen">
+  <span class="logo-sm brand">Cinema<b>PG</b></span>
+  <h2 class="profiles-title">Quem está assistindo?</h2>
+  <button class="profile" id="profile-yasmin" aria-label="Perfil Yasmin">
+    <span class="avatar">
+      <img src="assets/perfil/avatar.jpg" alt="" onerror="this.remove()">
+      <span class="avatar-initial">Y</span>
+    </span>
+    <span class="profile-name">Yasmin</span>
+  </button>
+</section>
+
+<!-- 3. INÍCIO: mostra o poster. Clicar nele abre os detalhes (NÃO toca o filme) -->
+<section id="home" class="screen">
+  <header class="topbar" id="topbar-home">
+    <span class="logo-sm">Cinema<b>PG</b></span>
+    <nav><button class="nav-link nav-on" type="button">Início</button></nav>
+    <span class="mini-avatar"><img src="assets/perfil/avatar.jpg" alt="" onerror="this.remove()"><b>Y</b></span>
+  </header>
+
+  <main class="home-main">
+    <h2 class="row-title">Lançamento exclusivo</h2>
+
+    <!-- POSTER (imagem: assets/filme/poster.jpg) -->
+    <button class="feature" id="feature" type="button" aria-label="Ver detalhes de NÓS">
+      <span class="feature-fallback" aria-hidden="true">NÓS</span>
+      <img class="feature-img" src="assets/filme/poster.jpg" alt="" onerror="this.remove()">
+      <span class="feature-shade"></span>
+      <span class="feature-badge">LANÇAMENTO EXCLUSIVO</span>
+      <span class="feature-bottom">
+        <span class="top1 top1-sm">
+          <span class="top1-box"><small>TOP</small><b>1</b></span>
+          <span class="top1-text"><em>EM ALTA</em> · O mais assistido hoje</span>
+        </span>
+        <span class="feature-chip" id="feature-chip">▶ Disponível agora</span>
+      </span>
+      <span class="feature-cta" aria-hidden="true">ⓘ Ver detalhes</span>
+      <span class="feature-bar" id="feat-bar" hidden><span id="feat-bar-fill"></span></span>
+    </button>
+
+    <div class="feature-info">
+      <p class="feature-title">NÓS</p>
+      <p class="feature-meta">2026 · Romance · Uma história real</p>
+      <p class="feature-match">Combina 100% com você</p>
+    </div>
+
+    <h3 class="row-title row-title-sm">Em breve</h3>
+    <div class="shelf">
+      <button class="soon-card" type="button" data-soon="NÓS 2"><span class="soon-lock">🔒</span><b>NÓS 2</b><small>Em breve…</small></button>
+    </div>
+
+    <p class="foot">CinemaPG · Uma plataforma feita só para você.</p>
+  </main>
+</section>
+
+<!-- 4. DETALHES DO FILME (capas: assets/catalogo/capa1.jpg, capa2.jpg...) -->
+<section id="catalog" class="screen">
+  <header class="topbar" id="topbar">
+    <button class="logo-sm logo-btn" type="button" data-home aria-label="Voltar ao início">Cinema<b>PG</b></button>
+    <nav><button class="nav-link nav-on" type="button" data-home>← Início</button></nav>
+    <span class="mini-avatar"><img src="assets/perfil/avatar.jpg" alt="" onerror="this.remove()"><b>Y</b></span>
+  </header>
+
+  <div class="hero">
+    <div class="hero-bg">
+      <div class="slides" id="slides"></div> <!-- capas que se alternam (criadas pelo script.js) -->
+      <div class="hero-shade"></div>
+    </div>
+    <div class="hero-content">
+      <p class="badge">LANÇAMENTO EXCLUSIVO</p>
+      <h2 class="hero-title">NÓS</h2>
+
+      <!-- SELO TOP 1 (edite o texto) -->
+      <div class="top1">
+        <span class="top1-box"><small>TOP</small><b>1</b></span>
+        <span class="top1-text"><em>EM ALTA</em> · O mais assistido hoje</span>
+      </div>
+      <p class="meta">2026 · Romance · Uma história real</p>
+
+      <!-- ✏️ SELOS: edite os textos como quiser -->
+      <div class="tags">
+        <span class="tag tag-rating" title="Pucca e Garu">PG</span>
+        <span class="tag tag-match">Combina 100% com você</span>
+        <span class="tag tag-box">ULTRA FULL MEGA HD</span>
+      </div>
+
+      <p class="desc">Uma coleção de lembranças, pequenos detalhes e momentos que merecem ser guardados para sempre.</p>
+      <p class="contains"><b>Contém:</b> saudade e muita fofura.</p>
+
+      <!-- FECHADURA: contagem regressiva até a estreia (data no script.js, RELEASE_AT) -->
+      <div class="premiere" id="premiere" hidden>
+        <p class="pm-title">Estreia em</p>
+        <div class="pm-grid">
+          <div><b id="pm-d">0</b><span>dias</span></div>
+          <div><b id="pm-h">00</b><span>horas</span></div>
+          <div><b id="pm-m">00</b><span>min</span></div>
+          <div><b id="pm-s">00</b><span>seg</span></div>
+        </div>
+        <p class="pm-hint" id="pm-hint" hidden>🔍 Volte todo dia: a imagem fica mais nítida a cada dia.</p>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-watch">▶ Assistir agora</button>
+        <button class="btn btn-ghost" id="btn-teaser" hidden>▶ Assistir teaser</button>
+        <button class="btn btn-ghost" id="btn-fav" aria-pressed="false"><span class="heart">♡</span> Meu filme favorito!</button>
+      </div>
+
+      <!-- Continuar assistindo (só aparece se ela parou no meio) -->
+      <div class="resume" id="resume" hidden>
+        <div class="bar"><span id="resume-bar"></span></div>
+        <p><span id="resume-label"></span> · <button class="link" id="btn-restart">Começar do início</button></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LINHA ENTRE PARANÁ E RIO: o fio vermelho se desenha quando ela rola até aqui -->
+  <section class="distance" id="distance">
+    <svg class="map" viewBox="0 0 600 260" role="img" aria-label="Um fio vermelho ligando o Paraná ao Rio de Janeiro">
+      <path id="route" class="route" pathLength="1" d="M120 170 C160 120 210 210 260 160 C300 160 340 150 345 125 C350 95 290 95 285 125 C282 150 330 175 360 160 C400 140 430 100 480 95"/>
+      <circle class="ring" cx="120" cy="170" r="6"/><circle class="city" cx="120" cy="170" r="6"/>
+      <circle class="ring r2" cx="480" cy="95" r="6"/><circle class="city" cx="480" cy="95" r="6"/>
+      <text x="120" y="208" text-anchor="middle">Paraná</text>
+      <text x="480" y="68" text-anchor="middle">Rio de Janeiro</text>
+      <circle class="spark" r="4"><animateMotion dur="5s" repeatCount="indefinite"><mpath href="#route"/></animateMotion></circle>
+    </svg>
+    <p class="distance-text">A distância nunca foi o final da história.</p>
+  </section>
+
+  <!-- ELENCO E EQUIPE ✏️ edite os nomes -->
+  <section class="details">
+    <h3 class="details-title">Elenco e equipe</h3>
+    <dl class="grid">
+      <div><dt>Estrelando</dt><dd>Yasmin (Pucca)</dd></div>
+      <div><dt>Direção</dt><dd>Garu</dd></div>
+      <div><dt>Gênero</dt><dd>Romance, nostalgia, uma história real</dd></div>
+      <div><dt>Este filme é</dt><dd>Fofo, nostálgico, emocionante</dd></div>
+      <div><dt>Locações</dt><dd>Paraná e Bahia</dd></div>
+      <div><dt>Trilha sonora</dt><dd>Photograph e Drunk Text</dd></div>
+      <div><dt>Disponível em</dt><dd>Celular e PC</dd></div>
+      <div><dt>Áudio</dt><dd>Português</dd></div>
+      <div><dt>Baseado em</dt><dd>Fatos reais</dd></div>
+      <div><dt>Classificação</dt><dd>PG: Pucca e Garu</dd></div>
+      <div><dt>Crítica</dt><dd>100000000000/10</dd></div>
+      <div><dt>Estreia</dt><dd id="release-text">2026</dd></div>
+      <div><dt>Produção</dt><dd>CinemaPG</dd></div>
+    </dl>
+    <p class="foot">CinemaPG · Uma plataforma feita só para você.</p>
+  </section>
+</section>
+
+<!-- TEASER (vídeo: assets/video/teaser.mp4) — só aparece enquanto o filme está trancado -->
+<section id="teaser" class="screen">
+  <video id="tv" playsinline></video>
+  <button class="back" id="tz-back" aria-label="Voltar aos detalhes">← Voltar</button>
+  <div class="tz-bar"><span id="tz-prog"></span></div>
+  <div class="endcard" id="tz-end" hidden>
+    <p class="end-title">Isso foi só um aperitivo.</p>
+    <p class="end-thanks" id="tz-when"></p>
+    <div class="end-actions">
+      <button class="btn btn-ghost" id="tz-replay">↺ Ver de novo</button>
+      <button class="btn btn-primary" id="tz-close">Voltar</button>
+    </div>
+  </div>
+</section>
+
+<!-- AVISO ANTES DO PLAY -->
+<section id="notice" class="screen">
+  <p class="notice-icon">🎧</p>
+  <p class="notice-title">Para a melhor experiência:</p>
+  <p class="notice-main">use fones e deixe o volume alto.</p>
+  <button class="btn btn-primary" id="btn-ready">Estou pronta</button>
+</section>
+
+<!-- 5. PLAYER (vídeo: assets/video/nos.mp4 · imagem antes do play: assets/filme/poster.jpg) -->
+<section id="player" class="screen">
+  <video id="video" playsinline preload="metadata"></video>
+
+  <!-- Exibido quando o vídeo ainda não existe -->
+  <div id="soon" class="soon" hidden>
+    <p class="logo-plain">NÓS</p>
+    <p>A estreia está sendo preparada.</p>
+    <p class="soon-sub">Volte em breve. Vai valer a espera.</p>
+  </div>
+
+  <button class="back" id="btn-back" aria-label="Voltar aos detalhes">← Voltar</button>
+  <button class="big-play" id="big-play" aria-label="Reproduzir">▶</button>
+
+  <!-- Menu de capítulos (lista editável no script.js) -->
+  <div class="chapters" id="chapters" hidden></div>
+
+  <div class="controls" id="controls">
+    <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Progresso">
+    <div class="row">
+      <button id="c-play" aria-label="Play/Pausa">▶</button>
+      <button id="c-mute" aria-label="Mudo">🔊</button>
+      <input type="range" id="vol" min="0" max="1" step="0.05" value="1" aria-label="Volume">
+      <span id="time">0:00 / 0:00</span>
+      <span class="spacer"></span>
+      <span id="chap-now"></span>
+      <button id="c-chap" class="chap-btn" aria-label="Capítulos">☰<span class="lbl"> Capítulos</span></button>
+      <button id="c-full" aria-label="Tela cheia">⛶</button>
+    </div>
+  </div>
+
+  <!-- AVALIAÇÃO FINAL: aparece quando o filme termina -->
+  <div class="endcard" id="endcard" hidden>
+    <p class="end-title">O que você achou?</p>
+    <div class="reactions">
+      <button data-r="❤️" data-m="(amei, que coisa mais linda!)" aria-label="Amei">❤️</button>
+      <button data-r="😭" data-m="(chorei litros!)" aria-label="Chorei">😭</button>
+      <button data-r="😍" data-m="(apaixonada, de novo!)" aria-label="Apaixonada">😍</button>
+    </div>
+    <p class="end-thanks" id="end-thanks" hidden></p>
+    <div class="end-actions">
+      <button class="btn btn-ghost" id="end-replay">↺ Assistir de novo</button>
+      <button class="btn btn-ghost" id="end-back">Voltar</button>
+    </div>
+  </div>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>

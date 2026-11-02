@@ -1,0 +1,1 @@
+Coloque aqui: poster.jpg (imagem exibida dentro do player antes do play, horizontal 1920x1080).

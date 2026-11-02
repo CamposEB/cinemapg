@@ -1,0 +1,1 @@
+Coloque aqui: avatar.jpg (foto do perfil, quadrada) e fundo.jpg (fundo da tela 'Quem esta assistindo?', horizontal 1920x1080).
