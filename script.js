@@ -332,7 +332,7 @@ document.querySelectorAll(".reactions button").forEach((b) => b.addEventListener
   if (WHATSAPP_NUMBER) {
     const msg = `Acabei de assistir NÓS no CinemaPG! Minha reação: ${b.dataset.r} ${b.dataset.m}`;
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(msg), "_blank");
-    thanks.textContent = "Agora é só enviar a mensagem no WhatsApp. O diretor está esperando. 💌";
+    thanks.textContent = "Agora é só enviar a mensagem no WhatsApp. 💌";
   } else {
     thanks.textContent = "Obrigado por assistir, Yasmin. ❤️";
   }
