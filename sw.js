@@ -2,8 +2,8 @@
    - Habilita "Instalar app" / "Adicionar à tela inicial".
    - Rede primeiro: sempre busca a versão nova do site; só usa o cache se estiver sem internet.
    - Nunca guarda vídeos (arquivos grandes e com "range"). */
-const CACHE = "cinemapg-v3";
-const SHELL = ["./", "index.html", "style.css", "script.js", "manifest.json",
+const CACHE = "cinemapg-v4";
+const SHELL = ["./", "index.html", "style.css", "script.js", "finale.js", "manifest.json",
                "assets/icones/icon-192.png", "assets/icones/icon-512.png"];
 
 self.addEventListener("install", (e) => {

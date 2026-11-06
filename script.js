@@ -33,7 +33,7 @@ Garu 💛`;
 
 // 🔒 FECHADURA: o botão "Assistir agora" só libera a partir desta data/hora (horário de Brasília, -03:00).
 // Formato: AAAA-MM-DDTHH:MM:SS-03:00. Para testar antes da data, abra o site com #teste no final do endereço.
-const RELEASE_AT = "2026-11-14T00:00:00-03:00";
+const RELEASE_AT = "2026-11-06T17:30:00-03:00";
 
 // 🔍 Foto que clareia: a capa e o poster começam borrados (BLUR_MAX px) e ficam mais nítidos a cada dia até a estreia.
 // BLUR_DAYS = quantos dias antes da estreia o efeito começa (use o nº de dias entre a publicação e a estreia).
@@ -421,7 +421,7 @@ function openLetter() {
   typeLetter();
 }
 function openTicket() {
-  if (!ENABLE_TICKET) { show("final"); return; }
+  if (!ENABLE_TICKET) { openFinale(); return; }
   show("ticket");
 }
 let extrasMode = false;
@@ -437,7 +437,7 @@ $("ticket-back").addEventListener("click", () => {
 });
 $("ticket-next").addEventListener("click", () => {
   if (extrasMode) backToCatalog();
-  else show("final");
+  else openFinale();
 });
 $("btn-extras").addEventListener("click", openExtras);
 if ($("btn-rewatch")) $("btn-rewatch").addEventListener("click", () => startWatch(true));
