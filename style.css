@@ -694,8 +694,10 @@ input[type=range]::-webkit-slider-thumb{
 .fx-btn,.premiere-fx .link{min-height:44px}
 
 /* ---------- G/H. Responsividade final e acessibilidade ---------- */
+/* ✅ CORRIGIDO: o texto do destaque fica colado na margem esquerda (alinhado com a logo),
+   em vez de centralizado numa coluna de 1180px, o que o empurrava para cima do rosto. */
 @media (min-width:1280px){
-  .hero-content{padding-left:max(5vw,calc((100vw - 1180px)/2));padding-right:3rem}
+  .hero-content{padding-left:5vw;padding-right:3rem}
   .distance,.details{padding-left:max(5vw,calc((100vw - 1180px)/2));padding-right:max(5vw,calc((100vw - 1180px)/2))}
 }
 @media (max-width:768px){
