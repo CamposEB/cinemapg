@@ -30,6 +30,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="fade-black" aria-hidden="true"></div>
 
 <!-- Frase de boas-vindas / avisos (fica fora das telas para aparecer em qualquer uma) -->
 <p class="welcome" id="welcome" aria-live="polite">Que bom te ver, Yasmin. Pegue a pipoca. 🍿</p>
@@ -111,11 +112,6 @@
       <p class="feature-match">Combina 100% com você</p>
     </div>
 
-    <h3 class="row-title row-title-sm">Em breve</h3>
-    <div class="shelf">
-      <button class="soon-card" type="button" data-soon="NÓS 2"><span class="soon-lock">🔒</span><b>NÓS 2</b><small>Em breve…</small></button>
-    </div>
-
     <button class="install" id="install" type="button" hidden>📲 Instalar o CinemaPG no celular</button>
 
     <p class="foot">CinemaPG · Uma plataforma feita só para você.</p>
@@ -171,6 +167,9 @@
         <button class="btn btn-primary" id="btn-watch">▶ Assistir agora</button>
         <button class="btn btn-ghost" id="btn-teaser" hidden>▶ Assistir teaser</button>
         <button class="btn btn-ghost" id="btn-fav" aria-pressed="false"><span class="heart">♡</span> Meu filme favorito!</button>
+        <button class="btn btn-ghost" id="btn-extras" hidden>✨ Extras</button>
+        <button class="btn btn-ghost" id="btn-rewatch" hidden>↺ Assistir de novo</button>
+        <span class="watched-chip" id="watched-chip" hidden>✓ Assistido</span>
       </div>
 
       <!-- Continuar assistindo (só aparece se ela parou no meio) -->
@@ -262,9 +261,20 @@
 
   <button class="back" id="btn-back" aria-label="Voltar aos detalhes">← Voltar</button>
   <button class="big-play" id="big-play" aria-label="Reproduzir">▶</button>
-
-  <!-- Menu de capítulos (lista editável no script.js) -->
-  <div class="chapters" id="chapters" hidden></div>
+  <div class="player-spinner" id="player-spinner" hidden aria-label="Carregando vídeo"></div>
+  <div class="pause-card" id="pause-card" hidden>
+    <p>Pausado</p>
+    <button class="btn btn-primary" id="pause-resume">▶ Continuar</button>
+  </div>
+  <div class="offline-card" id="offline-card" hidden>
+    <p>Sem conexão com a internet</p>
+    <p>Reconecte-se para continuar assistindo.</p>
+  </div>
+  <span class="seek-preview" id="seek-preview" hidden>0:00</span>
+  <div class="skip-controls" aria-label="Avançar ou voltar">
+    <button id="seek-back" aria-label="Voltar 10 segundos">−10 s</button>
+    <button id="seek-forward" aria-label="Avançar 10 segundos">+10 s</button>
+  </div>
 
   <div class="controls" id="controls">
     <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Progresso">
@@ -274,26 +284,99 @@
       <input type="range" id="vol" min="0" max="1" step="0.05" value="1" aria-label="Volume">
       <span id="time">0:00 / 0:00</span>
       <span class="spacer"></span>
-      <span id="chap-now"></span>
-      <button id="c-chap" class="chap-btn" aria-label="Capítulos">☰<span class="lbl"> Capítulos</span></button>
       <button id="c-full" aria-label="Tela cheia">⛶</button>
     </div>
   </div>
 
-  <!-- AVALIAÇÃO FINAL: aparece quando o filme termina -->
-  <div class="endcard" id="endcard" hidden>
-    <p class="end-title">O que você achou?</p>
-    <div class="reactions">
-      <button data-r="❤️" data-m="(amei, que coisa mais linda!)" aria-label="Amei">❤️</button>
-      <button data-r="😭" data-m="(chorei litros!)" aria-label="Chorei">😭</button>
-      <button data-r="😍" data-m="(apaixonada, de novo!)" aria-label="Apaixonada">😍</button>
-    </div>
-    <p class="end-thanks" id="end-thanks" hidden></p>
-    <div class="end-actions">
-      <button class="btn btn-ghost" id="end-replay">↺ Assistir de novo</button>
-      <button class="btn btn-ghost" id="end-back">Voltar</button>
-    </div>
+</section>
+
+<!-- Pós-filme: créditos → fim → carta → ingresso → tela final -->
+<section id="credits" class="screen postfilm" aria-label="Créditos">
+  <div class="postfilm-glow"></div>
+  <div class="credits-roll" id="credits-roll" aria-live="polite">
+    <p class="postfilm-kicker">CinemaPG · NÓS</p>
+    <h2 class="postfilm-title">Créditos</h2>
+    <div class="credits-list" id="credits-list"></div>
   </div>
+  <button class="btn btn-primary postfilm-next" id="credits-next">Continuar</button>
+  <button class="btn btn-ghost credits-skip" id="credits-skip" hidden>Pular créditos</button>
+  <button class="btn btn-ghost postfilm-exit" type="button" data-postfilm-back>Sair</button>
+</section>
+
+<section id="ending" class="screen postfilm" aria-label="Fim">
+  <div class="postfilm-glow"></div>
+  <svg class="ending-thread" viewBox="0 0 340 20" aria-hidden="true">
+    <path pathLength="1" d="M0 10 C40 -2 70 22 110 10 S170 -2 210 10 S280 22 340 10"/>
+  </svg>
+  <p class="postfilm-kicker">NÓS</p>
+  <h2 class="postfilm-title ending-title">Fim… ou será só o começo?</h2>
+  <button class="btn btn-primary postfilm-next" id="ending-next">Abrir a carta</button>
+  <button class="btn btn-ghost postfilm-exit" type="button" data-postfilm-back>Sair</button>
+</section>
+
+<section id="letter" class="screen postfilm" aria-label="Carta para Yasmin">
+  <article class="letter-card">
+    <p class="letter-kicker">Para Yasmin · Com todo o carinho</p>
+    <div class="letter-copy" id="letter-copy">
+      <p>Yasmin,</p>
+      <p>Se você chegou até aqui, é porque assistiu tudo. Obrigado por isso.</p>
+      <p>Eu só queria que você soubesse que eu penso MT em vc, cada uma das fotos é um pedaço seu que você me permitiu fazer parte, e eu guardei todos com muito cuidado e carinho.</p>
+      <p>Quando eu olho para a sua história, eu vejo uma menina que cresceu, enfrentou muitas coisas, e mesmo assim continuou sendo gentil, meiga e boa. Isso não é pouca coisa. Muita gente endurece no caminho, e você sempre foi tão gentil.</p>
+      <p>Apesar da distância q há, ela nunca foi capaz de diminuir oq vc significa para mim. Você faz parte dos meus dias, e eu sou muito grato por isso.</p>
+      <p>Eu não fiz este filme por causa de uma data. Quis fazer num dia comum, justamente para vc ver q não preciso de motivo para lembrar de você. Eu lembro sempre.</p>
+      <p>Se um dia você duvidar do quanto é especial, volte aqui e assista de novo.</p>
+      <p>Com todo o carinho do mundo,<br>Garu 💛</p>
+    </div>
+  </article>
+  <button class="btn btn-primary postfilm-next" id="letter-next">Ver ingresso</button>
+  <button class="btn btn-ghost postfilm-exit" type="button" data-postfilm-back>Sair</button>
+</section>
+
+<section id="ticket" class="screen postfilm" aria-label="Ingresso especial">
+  <article class="cinema-ticket">
+    <div class="ticket-main">
+      <p class="ticket-brand">Cinema<b>PG</b></p>
+      <p class="ticket-kicker">Ingresso especial</p>
+      <h2>NÓS</h2>
+      <p>Uma história real</p>
+    </div>
+    <div class="ticket-side">
+      <span>FILME</span>
+      <b>NÓS</b>
+      <span>PARANÁ ↔ RIO</span>
+      <strong>ADMIT ONE</strong>
+      <span>2026 · Y + G</span>
+    </div>
+  </article>
+  <div class="ticket-actions">
+    <button class="btn btn-ghost" id="ticket-back" type="button">← Voltar</button>
+    <button class="btn btn-primary postfilm-next" id="ticket-next">Final</button>
+  </div>
+  <button class="btn btn-ghost postfilm-exit" type="button" data-postfilm-back>Sair</button>
+</section>
+
+<section id="final" class="screen postfilm" aria-label="Final de NÓS">
+  <div class="postfilm-glow"></div>
+  <p class="postfilm-kicker">CinemaPG</p>
+  <h2 class="postfilm-title ending-title">Obrigado por assistir,<br>Yasmin.</h2>
+  <p class="final-message">Você faz parte desta história.</p>
+  <svg class="ending-thread final-thread" viewBox="0 0 340 20" aria-hidden="true">
+    <path pathLength="1" d="M0 10 C40 -2 70 22 110 10 S170 -2 210 10 S280 22 340 10"/>
+  </svg>
+  <div class="reactions" aria-label="Como você se sentiu?">
+    <button type="button" data-reaction="❤️" aria-label="Amei">❤️</button>
+    <button type="button" data-reaction="😭" aria-label="Emocionou">😭</button>
+    <button type="button" data-reaction="😍" aria-label="Apaixonante">😍</button>
+  </div>
+  <label class="final-message-write" for="final-message">Deixe uma mensagem para mim</label>
+  <textarea id="final-message" maxlength="280" rows="3" placeholder="Escreva aqui..."></textarea>
+  <button class="btn btn-primary" id="final-send" type="button">Enviar reação pelo WhatsApp</button>
+  <div class="final-actions">
+    <button class="btn btn-ghost" id="final-replay">↺ Assistir de novo</button>
+    <button class="btn btn-ghost" id="final-extras">✨ Ver extras</button>
+    <button class="btn btn-primary" id="final-back">Voltar aos detalhes</button>
+  </div>
+  <button class="btn btn-ghost postfilm-exit" type="button" data-postfilm-back>Sair</button>
 </section>
 
 <script src="script.js"></script>

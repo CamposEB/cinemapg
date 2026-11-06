@@ -14,6 +14,23 @@ const COVER_INTERVAL = 6000; // tempo entre trocas (ms)
 // WhatsApp que recebe a reação dela. Formato: DDI + DDD + número, só dígitos. Ex.: "5521999998888"
 const WHATSAPP_NUMBER = "5521993267426";
 
+const LETTER = `Yasmin,
+
+Se você chegou até aqui, é porque assistiu tudo. Obrigado por isso.
+
+Eu só queria que você soubesse que eu penso MT em vc, cada uma das fotos é um pedaço seu que você me permitiu fazer parte, e eu guardei todos com muito cuidado e carinho.
+
+Quando eu olho para a sua história, eu vejo uma menina que cresceu, enfrentou muitas coisas, e mesmo assim continuou sendo gentil, meiga e boa. Isso não é pouca coisa. Muita gente endurece no caminho, e você sempre foi tão gentil.
+
+Apesar da distância q há, ela nunca foi capaz de diminuir oq vc significa para mim. Você faz parte dos meus dias, e eu sou muito grato por isso.
+
+Eu não fiz este filme por causa de uma data. Quis fazer num dia comum, justamente para vc ver q não preciso de motivo para lembrar de você. Eu lembro sempre.
+
+Se um dia você duvidar do quanto é especial, volte aqui e assista de novo.
+
+Com todo o carinho do mundo,
+Garu 💛`;
+
 // 🔒 FECHADURA: o botão "Assistir agora" só libera a partir desta data/hora (horário de Brasília, -03:00).
 // Formato: AAAA-MM-DDTHH:MM:SS-03:00. Para testar antes da data, abra o site com #teste no final do endereço.
 const RELEASE_AT = "2026-11-14T00:00:00-03:00";
@@ -26,15 +43,17 @@ const BLUR_MAX = 0, BLUR_DAYS = 12;
 const TEASER_SRC = "assets/video/teaser.mp4";
 let teaserOK = false;
 
-// Capítulos do filme: t = segundo em que o capítulo começa. AJUSTE depois que o vídeo estiver pronto!
-const CHAPTERS = [
-  { t: 0,   title: "Os primeiros passos" },
-  { t: 45,  title: "A menina que cresceu" },
-  { t: 100, title: "Adolescência" },
-  { t: 160, title: "Quando nossos caminhos se cruzaram" },
-  { t: 220, title: "Nós" },
-  { t: 290, title: "Créditos" },
+// Pós-filme configurável
+const CREDITS = [
+  ["Estrelando","Yasmin (Pucca)"],
+  ["Direção","Garu"],
+  ["Locações","Paraná · Bahia · Rio de Janeiro"],
+  ["Trilha sonora","Photograph · Drunk Text"],
+  ["Uma história real","CinemaPG"]
 ];
+const CREDITS_SPEED = 44;
+const ENABLE_LETTER = true;
+const ENABLE_TICKET = true;
 
 // Mensagens do botão "Pular abertura" (ele nunca pula!)
 const SKIP_MESSAGES = [
@@ -47,7 +66,7 @@ const SKIP_MESSAGES = [
 
 const $ = (id) => document.getElementById(id);
 const video = $("video"), player = $("player"), catalog = $("catalog"), home = $("home");
-const KEY_PROGRESS = "nos-progress", KEY_FAV = "nos-fav";
+const KEY_PROGRESS = "nos-progress", KEY_FAV = "nos-fav", KEY_WATCHED = "nos-watched";
 
 /* Armazenamento seguro (se o navegador bloquear, o site segue funcionando) */
 const store = {
@@ -65,6 +84,12 @@ function show(id) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
   // o aviso de boas-vindas não fica por cima da abertura, do filme ou do teaser
   if (id === "presents" || id === "player" || id === "teaser") $("welcome").classList.remove("show");
+}
+function fadeToBlack(callback) {
+  const fade = $("fade-black");
+  if (!fade) return callback();
+  fade.classList.add("show");
+  setTimeout(() => { callback(); setTimeout(() => fade.classList.remove("show"), 180); }, 650);
 }
 document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => show(b.dataset.go)));
 
@@ -215,7 +240,6 @@ function enterPlayer() {
   clearTimeout(presentsTimer);
   endUnlock();
   show("player");
-  $("endcard").hidden = true;
   video.play().catch(() => {});
   wake();
 }
@@ -235,6 +259,7 @@ function launch(withIntro) {
   else enterPlayer();
 }
 function startWatch(fromStart) {
+  extrasMode = false;
   if (isLocked()) return lockedHint();
   loadVideo();
   const s = getSaved();
@@ -252,23 +277,59 @@ function backToCatalog() { // volta para a tela de detalhes
   updateResume(); show("catalog");
 }
 $("btn-back").addEventListener("click", backToCatalog);
-$("end-back").addEventListener("click", backToCatalog);
 
 /* ---- Controles do player ---- */
 const toggle = () => (video.paused ? video.play().catch(() => {}) : video.pause());
 $("big-play").addEventListener("click", toggle);
 $("c-play").addEventListener("click", toggle);
-video.addEventListener("click", () => { chapPanel.hidden = true; toggle(); });
-video.addEventListener("play", () => { $("c-play").textContent = "⏸"; $("big-play").classList.add("hide"); $("endcard").hidden = true; wake(); });
-video.addEventListener("pause", () => { $("c-play").textContent = "▶"; $("big-play").classList.remove("hide"); player.classList.remove("idle"); saveProgress(true); });
+video.addEventListener("click", () => { toggle(); });
+video.addEventListener("play", () => {
+  $("c-play").textContent = "⏸";
+  $("big-play").classList.add("hide");
+  $("pause-card").hidden = true;
+  $("player-spinner").hidden = true;
+  wake();
+});
+video.addEventListener("pause", () => {
+  $("c-play").textContent = "▶";
+  $("big-play").classList.remove("hide");
+  $("pause-card").hidden = !player.classList.contains("active");
+  player.classList.remove("idle");
+  saveProgress(true);
+});
+video.addEventListener("waiting", () => { $("player-spinner").hidden = false; });
+video.addEventListener("playing", () => { $("player-spinner").hidden = true; });
+video.addEventListener("error", () => {
+  $("player-spinner").hidden = true;
+  $("offline-card").hidden = false;
+});
+window.addEventListener("offline", () => { if (player.classList.contains("active")) $("offline-card").hidden = false; });
+window.addEventListener("online", () => { $("offline-card").hidden = true; });
 
-video.addEventListener("loadedmetadata", () => { updateTime(); buildChapters(); });
+video.addEventListener("loadedmetadata", () => { updateTime(); });
 video.addEventListener("timeupdate", () => {
   if (video.duration) $("seek").value = (video.currentTime / video.duration) * 1000;
-  updateTime(); markChapter(); saveProgress(false);
+  $("seek").style.setProperty("--progress", (video.currentTime / (video.duration || 1) * 100).toFixed(2) + "%");
+  updateTime(); saveProgress(false);
 });
 function updateTime() { $("time").textContent = fmt(video.currentTime) + " / " + fmt(video.duration); }
 $("seek").addEventListener("input", (e) => { if (video.duration) video.currentTime = (e.target.value / 1000) * video.duration; });
+let previewHideTimer;
+function showSeekPreview(e) {
+  if (!video.duration) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+  const preview = $("seek-preview");
+  preview.textContent = fmt(ratio * video.duration);
+  preview.style.left = rect.left + ratio * rect.width + "px";
+  preview.hidden = false;
+  clearTimeout(previewHideTimer);
+  previewHideTimer = setTimeout(() => { preview.hidden = true; }, 700);
+}
+$("seek").addEventListener("pointermove", showSeekPreview);
+$("seek").addEventListener("pointerdown", showSeekPreview);
+$("seek-back").addEventListener("click", () => { video.currentTime = Math.max(0, video.currentTime - 10); wake(); });
+$("seek-forward").addEventListener("click", () => { video.currentTime = Math.min(video.duration || 0, video.currentTime + 10); wake(); });
 
 $("vol").addEventListener("input", (e) => { video.volume = e.target.value; video.muted = false; icon(); });
 $("c-mute").addEventListener("click", () => { video.muted = !video.muted; icon(); });
@@ -279,77 +340,145 @@ $("c-full").addEventListener("click", () => {
   if (player.requestFullscreen) player.requestFullscreen().catch(() => {});
   else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen(); // iPhone
 });
+let wakeLock = null;
+async function wake() {
+  player.classList.remove("idle");
+  clearTimeout(hideTimer);
+  if (!video.paused && player.classList.contains("active")) {
+    if ("wakeLock" in navigator && !wakeLock && !video.paused) {
+      try { wakeLock = await navigator.wakeLock.request("screen"); } catch (_) {}
+    }
+    hideTimer = setTimeout(() => player.classList.add("idle"), 3000);
+  }
+}
 
 /* Controles somem após 3s sem movimento enquanto toca */
 let hideTimer;
-function wake() {
-  player.classList.remove("idle");
-  clearTimeout(hideTimer);
-  if (!video.paused && chapPanel.hidden) hideTimer = setTimeout(() => player.classList.add("idle"), 3000);
-}
 ["mousemove", "touchstart", "keydown"].forEach((ev) => player.addEventListener(ev, wake, { passive: true }));
-
-/* ---- Capítulos ---- */
-const chapPanel = $("chapters");
-function buildChapters() {
-  const list = CHAPTERS.filter((c) => !video.duration || c.t < video.duration);
-  if (!list.length) { $("c-chap").hidden = true; return; }
-  chapPanel.innerHTML = "";
-  const head = document.createElement("p");
-  head.className = "chap-head"; head.textContent = "Capítulos"; chapPanel.appendChild(head);
-  list.forEach((c) => {
-    const b = document.createElement("button");
-    b.dataset.t = c.t;
-    const t = document.createElement("span"); t.className = "ct"; t.textContent = fmt(c.t);
-    const n = document.createElement("span"); n.textContent = c.title;
-    b.append(t, n);
-    b.addEventListener("click", () => { video.currentTime = c.t; chapPanel.hidden = true; video.play().catch(() => {}); wake(); });
-    chapPanel.appendChild(b);
-  });
-}
-function markChapter() {
-  let cur = null;
-  chapPanel.querySelectorAll("button").forEach((b) => {
-    if (+b.dataset.t <= video.currentTime + 0.3) cur = b;
-    b.classList.remove("cur");
-  });
-  if (cur) { cur.classList.add("cur"); $("chap-now").textContent = cur.querySelector("span:last-child").textContent; }
-}
-$("c-chap").addEventListener("click", () => { chapPanel.hidden = !chapPanel.hidden; wake(); });
-buildChapters();
+let lastTap = 0, lastSide = "";
+player.addEventListener("pointerup", (e) => {
+  if (e.target.closest("button,input,.controls")) return;
+  const now = Date.now(), side = e.clientX < innerWidth / 2 ? "left" : "right";
+  if (now - lastTap < 320 && side === lastSide) {
+    video.currentTime = Math.min(video.duration || 0, Math.max(0, video.currentTime + (side === "right" ? 10 : -10)));
+  }
+  lastTap = now; lastSide = side;
+});
 
 /* ---- Avaliação final ---- */
 video.addEventListener("ended", () => {
   store.del(KEY_PROGRESS);
+  store.set(KEY_WATCHED, "1");
   player.classList.remove("idle");
-  chapPanel.hidden = true;
-  $("end-thanks").hidden = true;
-  $("endcard").hidden = false;
+  updateExtras();
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+  fadeToBlack(() => { show("credits"); startCredits(); });
 });
-document.querySelectorAll(".reactions button").forEach((b) => b.addEventListener("click", () => {
-  const thanks = $("end-thanks");
-  thanks.hidden = false;
-  if (WHATSAPP_NUMBER) {
-    const msg = `Acabei de assistir NÓS no CinemaPG! Minha reação: ${b.dataset.r} ${b.dataset.m}`;
-    window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(msg), "_blank");
-    thanks.textContent = "Agora é só enviar a mensagem no WhatsApp. 💌";
-  } else {
-    thanks.textContent = "Obrigado por assistir, Yasmin. ❤️";
-  }
+
+/* ---- Pós-filme ---- */
+function updateExtras() {
+  const watched = store.get(KEY_WATCHED) === "1";
+  $("btn-extras").hidden = !watched;
+  $("btn-rewatch").hidden = !watched;
+  if ($("watched-chip")) $("watched-chip").hidden = !watched;
+}
+
+function startCredits() {
+  const list = $("credits-list");
+  list.innerHTML = CREDITS.map((c) => `<p><span>${c[0]}</span><b>${c[1]}</b></p>`).join("");
+  $("credits").classList.add("rolling");
+  $("credits-skip").hidden = true;
+  setTimeout(() => { $("credits-skip").hidden = false; }, 6000);
+  setTimeout(() => {
+    if ($("credits").classList.contains("active")) advanceAfterCredits();
+  }, CREDITS_SPEED * 1000);
+}
+function advanceAfterCredits() {
+  $("credits-skip").hidden = true;
+  $("credits").classList.remove("rolling");
+  show("ending");
+}
+$("credits-skip").addEventListener("click", advanceAfterCredits);
+$("credits-next").addEventListener("click", advanceAfterCredits);
+
+let letterTimer = null;
+function typeLetter() {
+  clearInterval(letterTimer);
+  const box = $("letter-copy");
+  const copy = LETTER || box.innerText.trim();
+  box.textContent = "";
+  let i = 0;
+  letterTimer = setInterval(() => {
+    box.textContent += copy[i++] || "";
+    box.scrollTop = box.scrollHeight;
+    if (i >= copy.length) clearInterval(letterTimer);
+  }, 24);
+}
+function openLetter() {
+  if (!ENABLE_LETTER) { openTicket(); return; }
+  show("letter");
+  typeLetter();
+}
+function openTicket() {
+  if (!ENABLE_TICKET) { show("final"); return; }
+  show("ticket");
+}
+let extrasMode = false;
+function openExtras() { extrasMode = true; openLetter(); }
+
+$("credits-next").addEventListener("click", () => show("ending"));
+$("ending-next").addEventListener("click", openLetter);
+$("letter-next").addEventListener("click", openTicket);
+$("ticket-back").addEventListener("click", () => {
+  if (extrasMode) backToCatalog();
+  else if (ENABLE_LETTER) { show("letter"); typeLetter(); }
+  else { show("ending"); }
+});
+$("ticket-next").addEventListener("click", () => {
+  if (extrasMode) backToCatalog();
+  else show("final");
+});
+$("btn-extras").addEventListener("click", openExtras);
+if ($("btn-rewatch")) $("btn-rewatch").addEventListener("click", () => startWatch(true));
+$("final-extras").addEventListener("click", openExtras);
+$("final-replay").addEventListener("click", () => startWatch(true));
+$("final-back").addEventListener("click", backToCatalog);
+updateExtras();
+document.querySelectorAll("[data-postfilm-back]").forEach((b) => b.addEventListener("click", backToCatalog));
+
+let selectedReaction = "";
+document.querySelectorAll("[data-reaction]").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll("[data-reaction]").forEach((x) => x.classList.remove("selected"));
+  b.classList.add("selected");
+  selectedReaction = b.dataset.reaction;
 }));
-$("end-replay").addEventListener("click", () => { video.currentTime = 0; $("endcard").hidden = true; video.play().catch(() => {}); });
+$("final-send").addEventListener("click", () => {
+  store.set(KEY_WATCHED, "1");
+  const message = $("final-message").value.trim();
+  const text = [selectedReaction ? `Minha reação: ${selectedReaction}` : "", message].filter(Boolean).join("\n\n");
+  if (!text) { $("final-message").focus(); return; }
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+});
+$("pause-resume").addEventListener("click", () => video.play().catch(() => {}));
 
 /* ---- Atalhos de teclado ---- */
 document.addEventListener("keydown", (e) => {
   // Esc na tela de detalhes volta para o Início
   if (e.key === "Escape" && catalog.classList.contains("active")) return goHome();
+  if (e.key === "Escape" && document.querySelector("#credits.active, #ending.active, #letter.active, #ticket.active, #final.active")) {
+    return backToCatalog();
+  }
   if (!player.classList.contains("active")) return;
   if (e.code === "Space") { e.preventDefault(); toggle(); }
   if (e.key === "ArrowRight") video.currentTime += 10;
   if (e.key === "ArrowLeft") video.currentTime -= 10;
   if (e.key.toLowerCase() === "f") $("c-full").click();
+  if (e.key.toLowerCase() === "j" && location.hash.includes("teste")) {
+    video.currentTime = Math.max(0, video.duration ? video.duration - 0.5 : 0);
+  }
   if (e.key === "Escape" && !document.fullscreenElement) {
-    if (!chapPanel.hidden) chapPanel.hidden = true; else backToCatalog();
+    backToCatalog();
   }
 });
 
@@ -368,6 +497,7 @@ $("release-text").textContent = fmtDate({ day: "numeric", month: "long", year: "
 let wasLocked = isLocked();
 function tickPremiere() {
   const locked = isLocked(), btn = $("btn-watch"), chip = $("feature-chip");
+  const watched = store.get(KEY_WATCHED) === "1";
   $("premiere").hidden = !locked;
   $("btn-teaser").hidden = !(locked && teaserOK);
   btn.classList.toggle("locked", locked);
@@ -382,9 +512,9 @@ function tickPremiere() {
     $("pm-d").textContent = d; $("pm-h").textContent = String(h).padStart(2, "0");
     $("pm-m").textContent = String(m).padStart(2, "0"); $("pm-s").textContent = String(s).padStart(2, "0");
     btn.textContent = "🔒 Estreia em " + fmtDate({ day: "numeric", month: "long" });
-    chip.textContent = "🔒 Estreia em " + fmtDate({ day: "numeric", month: "long" });
+    chip.textContent = watched ? "✓ Assistido" : "🔒 Estreia em " + fmtDate({ day: "numeric", month: "long" });
   } else {
-    chip.textContent = "▶ Disponível agora";
+    chip.textContent = watched ? "✓ Assistido" : "▶ Disponível agora";
     if (wasLocked) {
       updateResume();
       celebratePremiere();
